@@ -1,3 +1,6 @@
+// Background script for Firefox (Manifest V2)
+// Firefox still supports webRequest blocking, so we use the original approach
+
 let defaultAccount = 0;
 let rules = [];
 let accounts = [];
@@ -111,14 +114,13 @@ chrome.webRequest.onBeforeRequest.addListener(
       // Cos with "0" there are many redirect problems, and Google handles it anyway
       // isAccountLoggedIn - cos there will be ERR_TOO_MANY_REDIRECTS
       if (redirectUrl && accountId !== 0 && isAccountLoggedIn(accountId)) {
-        if (detectRedirectCycle(redirectUrl)) return; // ERR_TOO_MENY_REQUESTS (detecting a redirect cycle)
+        if (detectRedirectCycle(redirectUrl)) return; // ERR_TOO_MANY_REQUESTS (detecting a redirect cycle)
         return { redirectUrl };
       }
     }
   },
   // filters
   {
-    // types: ["main_frame", "sub_frame"],
     types: ["main_frame"],
     urls: ["<all_urls>"],
   },
@@ -152,9 +154,9 @@ chrome.commands.onCommand.addListener((command) => {
     try {
       const accNum = parseInt(command.charAt(command.length - 1)) - 1;
       SyncStorage.get("accounts", (data) => {
-        // redirect only if accNum is not > than totla number of accounts
+        // redirect only if accNum is not > than total number of accounts
         if (data.accounts && data.accounts.length > accNum) {
-          redirectCurrectTab(accNum);
+          redirectCurrentTab(accNum);
         }
       });
     } catch {}

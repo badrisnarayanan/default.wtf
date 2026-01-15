@@ -1,10 +1,45 @@
+# Default Account+ for Google
 
-# <img src="https://user-images.githubusercontent.com/22365403/129391087-1d800677-59b8-4e42-ba0c-de88d684eedd.png" alt="wtf?" width="25"/> DefaultWTF
+A maintained fork of [default.wtf](https://github.com/uptechteam/default.wtf) updated for **Manifest V3** and modern Chrome versions.
 
-- [Website](https://www.default.wtf/)
+## What's New in v2.0
 
-- [Chrome store page](https://chrome.google.com/webstore/detail/default-google-account/bnocikekcdchphdpfffcgikiblhnkdad)
+- **Manifest V3 Support**: Updated for Chrome's latest extension platform
+- **New Google Services**: Added support for Gemini, NotebookLM, Looker Studio, AppSheet
+- **Firefox Support**: Maintains MV2 compatibility for Firefox
+- **Service Worker Architecture**: Replaced persistent background page with service worker
+- **Declarative Net Request**: Uses modern Chrome API for URL redirects
 
-- [Buy us a coffee](https://www.buymeacoffee.com/default)
+## Features
 
-- [Open source license](https://github.com/uptechteam/default-google-account/blob/dev/LICENSE)
+- Set a default Google account for all Google services
+- Create per-service rules (e.g., use Account #2 for Gmail, Account #1 for Drive)
+- Quick account switching with keyboard shortcuts (Alt+1 through Alt+9)
+- Supports 50+ Google services
+
+## Installation
+
+### Chrome
+1. Download or clone this repository
+2. Open `chrome://extensions/`
+3. Enable "Developer mode"
+4. Click "Load unpacked" and select the extension folder
+
+### Firefox
+1. Rename `manifest_firefox.json` to `manifest.json` (backup the Chrome one first)
+2. Open `about:debugging#/runtime/this-firefox`
+3. Click "Load Temporary Add-on"
+4. Select `manifest.json`
+
+## Supported Google Services
+
+Calendar, Drive, Gmail, Meet, Docs, Photos, Keep, Chat, Maps, News, Ads, Analytics, Firebase, Cloud Console, Play Store, YouTube, Translate, Classroom, and many more including:
+- **New**: Gemini, NotebookLM, Looker Studio, AppSheet
+
+## License
+
+BSD-3-Clause License - see [LICENSE](LICENSE)
+
+## Credits
+
+Original extension by [UpTech Team](https://github.com/uptechteam)

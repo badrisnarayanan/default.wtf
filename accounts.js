@@ -83,7 +83,7 @@ function renderAccounts(accounts, defaultAccount) {
       cellContent.querySelector(".cell-body").addEventListener("click", () => {
         chrome.tabs.query(
           { active: true, currentWindow: true },
-          signIn(info[3])
+          signIn(user.email)
         );
       });
     } else {
