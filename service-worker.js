@@ -235,7 +235,11 @@ async function updateRedirectRules() {
     }
 
     // Create rule for this service
-    // Match URLs like: *://calendar.google.com/* but NOT if they already have authuser
+    // Use urlFilter to match the service domain
+    // Use excludedRequestDomains won't work here, so we rely on urlFilter
+    // Note: We can't easily exclude URLs with authuser using urlFilter alone,
+    // so we'll handle that check in the tabs.onCreated listener instead
+    const escapedUrl = service.url.replace(/\./g, '\\.');
     newRules.push({
       id: ruleId++,
       priority: 1,
@@ -250,11 +254,10 @@ async function updateRedirectRules() {
         }
       },
       condition: {
-        urlFilter: `||${service.url}`,
-        excludedInitiatorDomains: ['google.com', 'google.co.uk', 'google.co.in'], // Don't redirect internal Google navigation
-        resourceTypes: ['main_frame'],
-        // Exclude URLs that already have authuser set
-        regexFilter: `^https?://[^?]*${service.url.replace(/\./g, '\\.')}[^?]*(?!.*authuser=).*$`
+        // Use regexFilter to match URLs without authuser parameter
+        regexFilter: `^https?://([^/]*\\.)?${escapedUrl}/.*`,
+        excludedInitiatorDomains: ['google.com', 'google.co.uk', 'google.co.in'],
+        resourceTypes: ['main_frame']
       }
     });
 
