@@ -5,7 +5,7 @@ A maintained fork of [default.wtf](https://github.com/uptechteam/default.wtf) up
 ## What's New in v2.0
 
 - **Manifest V3 Support**: Updated for Chrome's latest extension platform
-- **New Google Services**: Added support for Gemini, NotebookLM, Looker Studio, AppSheet
+- **New Google Services**: Added support for Gemini, NotebookLM, AppSheet
 - **Firefox Support**: Maintains MV2 compatibility for Firefox
 - **Service Worker Architecture**: Replaced persistent background page with service worker
 - **Declarative Net Request**: Uses modern Chrome API for URL redirects
