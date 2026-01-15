@@ -195,81 +195,108 @@ async function parseAccountsWithOffscreen(rawText) {
 
 const RULE_ID_BASE = 1000;
 const MAX_RULES = 100;
+let isUpdatingRules = false;
+
+// Services that redirect ?authuser=N to /u/N/ format (need allow rules to prevent loops)
+const SERVICES_WITH_PATH_REDIRECT = ['gemini.google.com', 'aistudio.google.com'];
 
 async function updateRedirectRules() {
-  const data = await SyncStorage.getAsync(['defaultAccount', 'rules', 'accounts']);
-  const defaultAccount = data.defaultAccount ?? 0;
-  const customRules = data.rules ?? [];
-  const accounts = data.accounts ?? [];
+  // Prevent concurrent updates
+  if (isUpdatingRules) {
+    return;
+  }
+  isUpdatingRules = true;
 
-  // If default account is 0, no redirect needed (Google handles it)
-  // Also check if account is logged in
-  const isAccountLoggedIn = (accountIndex) => {
-    return Boolean(accounts[accountIndex]?.isLoggedIn);
-  };
+  try {
+    const data = await SyncStorage.getAsync(['defaultAccount', 'rules', 'accounts']);
+    const defaultAccount = data.defaultAccount ?? 0;
+    const customRules = data.rules ?? [];
+    const accounts = data.accounts ?? [];
 
-  // Get all existing dynamic rules to remove them
-  const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
-  const existingRuleIds = existingRules.map(rule => rule.id);
+    // If default account is 0, no redirect needed (Google handles it)
+    // Also check if account is logged in
+    const isAccountLoggedIn = (accountIndex) => {
+      return Boolean(accounts[accountIndex]?.isLoggedIn);
+    };
 
-  // Build new rules
-  const newRules = [];
-  let ruleId = RULE_ID_BASE;
+    // Get all existing dynamic rules to remove them
+    const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const existingRuleIds = existingRules.map(rule => rule.id);
 
-  // Get all supported services
-  const services = allSupportedGoogleServices();
+    // Build new rules
+    const newRules = [];
+    let ruleId = RULE_ID_BASE;
 
-  for (const service of services) {
-    // Check if there's a custom rule for this service
-    const customRule = customRules.find(r =>
-      r.serviceName.toLowerCase() === service.name.toLowerCase() ||
-      r.serviceUrl === service.url
-    );
-
-    const accountId = customRule ? customRule.accountId : defaultAccount;
-
-    // Skip if account is 0 (default) or not logged in
-    if (accountId === 0 || !isAccountLoggedIn(accountId)) {
-      continue;
+    // First, add "allow" rules for services that use /u/N/ path format
+    // These have higher priority to prevent redirect loops
+    for (const serviceUrl of SERVICES_WITH_PATH_REDIRECT) {
+      const escapedUrl = serviceUrl.replace(/\./g, '\\.');
+      newRules.push({
+        id: ruleId++,
+        priority: 2, // Higher priority than redirect rules
+        action: {
+          type: 'allow'
+        },
+        condition: {
+          // Match URLs that already have /u/N/ in the path
+          regexFilter: `^https?://([^/]*\\.)?${escapedUrl}/u/\\d+.*`,
+          resourceTypes: ['main_frame']
+        }
+      });
     }
 
-    // Create rule for this service
-    // Use urlFilter to match the service domain
-    // Use excludedRequestDomains won't work here, so we rely on urlFilter
-    // Note: We can't easily exclude URLs with authuser using urlFilter alone,
-    // so we'll handle that check in the tabs.onCreated listener instead
-    const escapedUrl = service.url.replace(/\./g, '\\.');
-    newRules.push({
-      id: ruleId++,
-      priority: 1,
-      action: {
-        type: 'redirect',
-        redirect: {
-          transform: {
-            queryTransform: {
-              addOrReplaceParams: [{ key: 'authuser', value: String(accountId) }]
+    // Get all supported services
+    const services = allSupportedGoogleServices();
+
+    for (const service of services) {
+      // Check if there's a custom rule for this service
+      const customRule = customRules.find(r =>
+        r.serviceName.toLowerCase() === service.name.toLowerCase() ||
+        r.serviceUrl === service.url
+      );
+
+      const accountId = customRule ? customRule.accountId : defaultAccount;
+
+      // Skip if account is 0 (default) or not logged in
+      if (accountId === 0 || !isAccountLoggedIn(accountId)) {
+        continue;
+      }
+
+      // Create rule for this service
+      const escapedUrl = service.url.replace(/\./g, '\\.');
+      newRules.push({
+        id: ruleId++,
+        priority: 1,
+        action: {
+          type: 'redirect',
+          redirect: {
+            transform: {
+              queryTransform: {
+                addOrReplaceParams: [{ key: 'authuser', value: String(accountId) }]
+              }
             }
           }
+        },
+        condition: {
+          regexFilter: `^https?://([^/]*\\.)?${escapedUrl}/.*`,
+          excludedInitiatorDomains: ['google.com', 'google.co.uk', 'google.co.in'],
+          resourceTypes: ['main_frame']
         }
-      },
-      condition: {
-        // Use regexFilter to match URLs without authuser parameter
-        regexFilter: `^https?://([^/]*\\.)?${escapedUrl}/.*`,
-        excludedInitiatorDomains: ['google.com', 'google.co.uk', 'google.co.in'],
-        resourceTypes: ['main_frame']
-      }
+      });
+
+      if (ruleId >= RULE_ID_BASE + MAX_RULES) break;
+    }
+
+    // Update the dynamic rules
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: existingRuleIds,
+      addRules: newRules.slice(0, MAX_RULES)
     });
 
-    if (ruleId >= RULE_ID_BASE + MAX_RULES) break;
+    console.log(`Updated ${newRules.length} redirect rules`);
+  } finally {
+    isUpdatingRules = false;
   }
-
-  // Update the dynamic rules
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: existingRuleIds,
-    addRules: newRules.slice(0, MAX_RULES)
-  });
-
-  console.log(`Updated ${newRules.length} redirect rules`);
 }
 
 // ============================================================
