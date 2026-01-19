@@ -198,7 +198,18 @@ const MAX_RULES = 100;
 let isUpdatingRules = false;
 
 // Services that redirect ?authuser=N to /u/N/ format (need allow rules to prevent loops)
-const SERVICES_WITH_PATH_REDIRECT = ['gemini.google.com', 'aistudio.google.com'];
+const SERVICES_WITH_PATH_REDIRECT = [
+  'gemini.google.com',
+  'aistudio.google.com',
+  'docs.google.com',
+  'drive.google.com',
+  'calendar.google.com',
+  'contacts.google.com',
+  'keep.google.com',
+  'photos.google.com',
+  'chat.google.com',
+  'meet.google.com'
+];
 
 async function updateRedirectRules() {
   // Prevent concurrent updates
@@ -227,40 +238,64 @@ async function updateRedirectRules() {
     const newRules = [];
     let ruleId = RULE_ID_BASE;
 
-    // First, add "allow" rules for services that use /u/N/ path format
-    // These have higher priority to prevent redirect loops
+    // Get all supported services
+    const services = allSupportedGoogleServices();
+
+    // Helper to get account ID for a service
+    const getAccountIdForService = (service) => {
+      const customRule = customRules.find(r =>
+        r.serviceName.toLowerCase() === service.name.toLowerCase() ||
+        r.serviceUrl === service.url
+      );
+      return customRule ? customRule.accountId : defaultAccount;
+    };
+
+    // Handle services that use /u/N/ path format
     for (const serviceUrl of SERVICES_WITH_PATH_REDIRECT) {
+      const service = services.find(s => s.url === serviceUrl);
+      if (!service) continue;
+
+      const accountId = getAccountIdForService(service);
+      if (accountId === 0 || !isAccountLoggedIn(accountId)) continue;
+
       const escapedUrl = serviceUrl.replace(/\./g, '\\.');
+
+      // Allow rule: skip if /u/N/ already anywhere in path (prevents loops)
       newRules.push({
         id: ruleId++,
-        priority: 2, // Higher priority than redirect rules
+        priority: 2,
+        action: { type: 'allow' },
+        condition: {
+          regexFilter: `^https?://${escapedUrl}/.*u/\\d+.*`,
+          resourceTypes: ['main_frame']
+        }
+      });
+
+      // Redirect rule: insert /u/N/ into path
+      newRules.push({
+        id: ruleId++,
+        priority: 1,
         action: {
-          type: 'allow'
+          type: 'redirect',
+          redirect: {
+            regexSubstitution: `\\1/u/${accountId}/\\2`
+          }
         },
         condition: {
-          // Match URLs that already have /u/N/ in the path
-          regexFilter: `^https?://([^/]*\\.)?${escapedUrl}/u/\\d+.*`,
+          regexFilter: `^(https?://${escapedUrl})/(.*)$`,
+          excludedInitiatorDomains: ['google.com', 'google.co.uk', 'google.co.in'],
           resourceTypes: ['main_frame']
         }
       });
     }
 
-    // Get all supported services
-    const services = allSupportedGoogleServices();
-
+    // Handle standard services that use ?authuser=N format
     for (const service of services) {
-      // Check if there's a custom rule for this service
-      const customRule = customRules.find(r =>
-        r.serviceName.toLowerCase() === service.name.toLowerCase() ||
-        r.serviceUrl === service.url
-      );
+      // Skip services that use /u/N/ path format
+      if (SERVICES_WITH_PATH_REDIRECT.includes(service.url)) continue;
 
-      const accountId = customRule ? customRule.accountId : defaultAccount;
-
-      // Skip if account is 0 (default) or not logged in
-      if (accountId === 0 || !isAccountLoggedIn(accountId)) {
-        continue;
-      }
+      const accountId = getAccountIdForService(service);
+      if (accountId === 0 || !isAccountLoggedIn(accountId)) continue;
 
       // Create rule for this service
       const escapedUrl = service.url.replace(/\./g, '\\.');
