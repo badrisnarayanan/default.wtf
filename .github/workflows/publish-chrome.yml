@@ -25,7 +25,11 @@ jobs:
             -x "*.github*" \
             -x "*.md" \
             -x "manifest_firefox.json" \
-            -x "*.DS_Store"
+            -x "*.DS_Store" \
+            -x "node_modules/*" \
+            -x "tests/*" \
+            -x "package.json" \
+            -x "package-lock.json"
 
       - name: Upload to Chrome Web Store
         uses: mnao305/chrome-extension-upload@v5.0.0

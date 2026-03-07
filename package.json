@@ -1,0 +1,24 @@
+{
+  "name": "default_account_for_google",
+  "version": "1.0.0",
+  "description": "A maintained fork of [default.wtf](https://github.com/uptechteam/default.wtf) updated for **Manifest V3** and modern Chrome versions.",
+  "main": "accounts.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/badrisnarayanan/default.wtf.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/badrisnarayanan/default.wtf/issues"
+  },
+  "homepage": "https://github.com/badrisnarayanan/default.wtf#readme",
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}
