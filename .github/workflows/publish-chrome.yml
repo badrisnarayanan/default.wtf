@@ -23,6 +23,7 @@ jobs:
           zip -r extension.zip . \
             -x "*.git*" \
             -x "*.github*" \
+            -x "*.claude*" \
             -x "*.md" \
             -x "manifest_firefox.json" \
             -x "*.DS_Store" \
