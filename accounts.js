@@ -96,7 +96,7 @@ function renderAccounts(accounts, defaultAccount) {
         .querySelector(".cell-body")
         .addEventListener("click", async () => {
           SyncStorage.store({ defaultAccount: user.index }, function () {
-            redirectCurrectTab(user.index);
+            redirectCurrentTab(user.index);
             window.close();
           });
         });

@@ -2,7 +2,6 @@
   "name": "default_account_for_google",
   "version": "1.0.0",
   "description": "A maintained fork of [default.wtf](https://github.com/uptechteam/default.wtf) updated for **Manifest V3** and modern Chrome versions.",
-  "main": "accounts.js",
   "scripts": {
     "test": "vitest run"
   },

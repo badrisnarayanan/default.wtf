@@ -1,6 +1,6 @@
 // Service Worker for Default Account+ for Google (Manifest V3)
 
-import { allSupportedGoogleServices, buildRedirectRules } from './redirect-rules.js';
+import { buildRedirectRules } from './redirect-rules.js';
 
 // ============================================================
 // Storage Helper Class
@@ -83,7 +83,6 @@ function redirectCurrentTab(defaultAccount) {
   });
 }
 
-// allSupportedGoogleServices() is imported from redirect-rules.js
 
 // ============================================================
 // Offscreen Document Management for Parsing
@@ -245,11 +244,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // Keep the message channel open for async response
   }
 
-  // Handle request for services list
-  if (message === 'get_supported_services') {
-    sendResponse(allSupportedGoogleServices());
-    return;
-  }
 });
 
 // ============================================================
@@ -331,10 +325,3 @@ chrome.commands.onCommand.addListener((command) => {
 // Initialize rules when service worker starts
 updateRedirectRules();
 
-// Export for popup scripts
-self.SyncStorage = SyncStorage;
-self.isGoogleServiceUrl = isGoogleServiceUrl;
-self.isAnyGoogleUrl = isAnyGoogleUrl;
-self.convertToRedirectUrl = convertToRedirectUrl;
-self.redirectCurrentTab = redirectCurrentTab;
-self.allSupportedGoogleServices = allSupportedGoogleServices;

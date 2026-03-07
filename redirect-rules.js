@@ -99,7 +99,7 @@ export function allSupportedGoogleServices() {
     { name: 'Optimize', title: 'Optimize', url: 'optimize.google.com', img: './images/logos/optimize.png' },
     { name: 'Merchants', title: 'Merchant Center', url: 'merchants.google.com', img: './images/logos/merchants.png' },
     { name: 'Finance', title: 'Finance', url: 'finance.google.com', img: './images/logos/finance.png' },
-    { name: 'Collab', title: 'Colab Research', url: 'colab.research.google.com', img: './images/logos/colab.png' },
+    { name: 'Collab', title: 'Colab Research', url: 'colab.research.google.com', img: './images/logos/collab.png' },
     { name: 'Contacts', title: 'Contacts', url: 'contacts.google.com', img: './images/logos/contacts.png' },
     { name: 'Script', title: 'Apps Script', url: 'script.google.com', img: './images/logos/script.png' },
     { name: 'Messages', title: 'Messages', url: 'messages.google.com', img: './images/logos/messages.png' },
