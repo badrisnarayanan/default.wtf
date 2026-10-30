@@ -294,6 +294,44 @@ describe('Rule priority resolution', () => {
     });
   });
 
+  describe('Classroom', () => {
+    it('selects the default account on entry and allows the routed URL', () => {
+      const entry = findMatchingRule(rules, 'https://classroom.google.com/');
+      expect(entry.action.type).toBe('redirect');
+      expect(entry.action.redirect.transform.queryTransform.addOrReplaceParams)
+        .toEqual([{ key: 'authuser', value: '1' }]);
+
+      // Google consumes authuser and redirects to its account-specific path.
+      const routed = findMatchingRule(rules, 'https://classroom.google.com/u/1/h');
+      expect(routed.action.type).toBe('allow');
+    });
+
+    it.each([
+      '/u/0/h',
+      '/u/2/c/course123',
+      '/u/1/a/not-turned-in/all',
+      '/u/1',
+      '/u/1?hl=pt-BR',
+      '/u/1/h?authuser=1',
+    ])('preserves account selection and deep links: %s', (path) => {
+      const match = findMatchingRule(rules, `https://classroom.google.com${path}`);
+      expect(match.action.type).toBe('allow');
+    });
+
+    it('uses a custom Classroom account without redirecting its routed page again', () => {
+      const customRules = buildRedirectRules({
+        defaultAccount: 0,
+        customRules: [{ serviceName: 'Classroom', accountId: 2 }],
+        accounts: Array.from({ length: 3 }, () => ({ isLoggedIn: true })),
+      });
+      const entry = findMatchingRule(customRules, 'https://classroom.google.com/');
+      expect(entry.action.redirect.transform.queryTransform.addOrReplaceParams)
+        .toEqual([{ key: 'authuser', value: '2' }]);
+      expect(findMatchingRule(customRules, 'https://classroom.google.com/u/2/h').action.type)
+        .toBe('allow');
+    });
+  });
+
   describe('Gmail / Mail', () => {
     it('gmail.com → redirect to mail.google.com with authuser', () => {
       const match = findMatchingRule(rules, 'https://gmail.com');

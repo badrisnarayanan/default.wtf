@@ -7,6 +7,7 @@ export const SERVICES_WITH_PATH_REDIRECT = [
   'docs.google.com',
   'drive.google.com',
   'calendar.google.com',
+  'classroom.google.com',
   'contacts.google.com',
   'keep.google.com',
   'photos.google.com',
