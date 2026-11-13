@@ -18,7 +18,7 @@ class SyncStorage {
 // ============================================================
 function isGoogleServiceUrl(url) {
   return (
-    /^https?:\/\/[^?&]*(?:mail|drive|calendar|meet|docs|admin|photos|translate|keep|hangouts|chat|workspace|maps|news|ads|ediscovery|jamboard|earth|podcasts|classroom|business|myaccount|adsense|cloud|adwords|analytics|firebase|play|voice|tagmanager|duo|datastudio|optimize|merchants|finance|colab\.research|contacts|script|messages|search|stadia|developers|one|chrome|books|sites|groups|gemini|notebooklm|aistudio)\.google\.co.*/i.test(
+    /^https?:\/\/[^?&]*(?:mail|drive|calendar|meet|docs|admin|photos|translate|keep|hangouts|chat|workspace|maps|news|ads|ediscovery|jamboard|earth|podcasts|classroom|business|myaccount|adsense|cloud|adwords|analytics|firebase|play|voice|tagmanager|duo|datastudio|optimize|merchants|finance|colab\.research|contacts|script|messages|search|stadia|developers|one|chrome|books|sites|groups|gemini|notebooklm|aistudio|stitch)\.google\.co.*/i.test(
       url
     ) ||
     /^https?:\/\/(www\.)?google\.co(?:m|\.[a-z]{2,3})\/(?:maps|finance|travel|flights)/i.test(
@@ -126,5 +126,6 @@ function allSupportedGoogleServices() {
     { name: 'Gemini', title: 'Gemini', url: 'gemini.google.com', img: './images/logos/gemini.png' },
     { name: 'NotebookLM', title: 'NotebookLM', url: 'notebooklm.google.com', img: './images/logos/notebooklm.png' },
     { name: 'AIStudio', title: 'AI Studio', url: 'aistudio.google.com', img: './images/logos/aistudio.png' },
+    { name: 'Stitch', title: 'Stitch', url: 'stitch.google.com', img: './images/logos/stitch.png' },
   ];
 }
