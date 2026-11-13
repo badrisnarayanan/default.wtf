@@ -12,7 +12,8 @@ export const SERVICES_WITH_PATH_REDIRECT = [
   'photos.google.com',
   'chat.google.com',
   'meet.google.com',
-  'mail.google.com'
+  'mail.google.com',
+  'stitch.google.com'
 ];
 
 // All Google country-code domains used in excludedInitiatorDomains
@@ -113,6 +114,7 @@ export function allSupportedGoogleServices() {
     { name: 'Gemini', title: 'Gemini', url: 'gemini.google.com', img: './images/logos/gemini.png' },
     { name: 'NotebookLM', title: 'NotebookLM', url: 'notebooklm.google.com', img: './images/logos/notebooklm.png' },
     { name: 'AIStudio', title: 'AI Studio', url: 'aistudio.google.com', img: './images/logos/aistudio.png' },
+    { name: 'Stitch', title: 'Stitch', url: 'stitch.google.com', img: './images/logos/stitch.png' },
   ];
 }
 
