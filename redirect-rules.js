@@ -16,6 +16,69 @@ export const SERVICES_WITH_PATH_REDIRECT = [
   'stitch.google.com'
 ];
 
+// Google Search (www.google.<tld>/search, /webhp) uses ?authuser=N switching (no /u/N/ path)
+export const GOOGLE_SEARCH_SERVICE = {
+  name: 'GoogleSearch',
+  title: 'Search',
+  url: 'www.google.com',
+  img: './images/logos/search.png'
+};
+
+export function isGoogleSearchUrl(url) {
+  return /^https?:\/\/(?:www\.)?google\.(?:com|co\.[a-z]{2}|com\.[a-z]{2,3}|[a-z]{2,3})\/(?:search|webhp)(?:[/?#]|$)/i.test(url);
+}
+
+function getGoogleSearchAccountId(defaultAccount, customRules) {
+  const custom = customRules.find(r =>
+    r.serviceName?.toLowerCase() === GOOGLE_SEARCH_SERVICE.name.toLowerCase() ||
+    r.serviceUrl === GOOGLE_SEARCH_SERVICE.url ||
+    r.serviceUrl === 'google.com/search'
+  );
+  return custom ? custom.accountId : defaultAccount;
+}
+
+function buildGoogleSearchRules({ accountId, ruleIdStart }) {
+  if (accountId === 0) return { rules: [], nextId: ruleIdStart };
+  const rules = [];
+  let ruleId = ruleIdStart;
+  // Match Google Search/WebHP on google.com and common ccTLDs (with or without www)
+  const searchHostPath = '(?:www\\.)?google\\.(?:com|co\\.[a-z]{2}|com\\.[a-z]{2,3}|[a-z]{2,3})/(?:search|webhp)';
+
+  // Priority 2 - Allow: URL already has authuser, respect user's manual account choice
+  rules.push({
+    id: ruleId++,
+    priority: 2,
+    action: { type: 'allow' },
+    condition: {
+      regexFilter: `^https?://${searchHostPath}(?:[/?#].*)?(?:[?&]authuser=\\d+)`,
+      resourceTypes: ['main_frame']
+    }
+  });
+
+  // Priority 1 - Add authuser when missing
+  rules.push({
+    id: ruleId++,
+    priority: 1,
+    action: {
+      type: 'redirect',
+      redirect: {
+        transform: {
+          queryTransform: {
+            addOrReplaceParams: [{ key: 'authuser', value: String(accountId) }]
+          }
+        }
+      }
+    },
+    condition: {
+      regexFilter: `^https?://${searchHostPath}(?:[/?#].*)?$`,
+      excludedInitiatorDomains: EXCLUDED_INITIATOR_DOMAINS,
+      resourceTypes: ['main_frame']
+    }
+  });
+
+  return { rules, nextId: ruleId };
+}
+
 // All Google country-code domains used in excludedInitiatorDomains
 export const EXCLUDED_INITIATOR_DOMAINS = [
   'google.com',
@@ -115,6 +178,7 @@ export function allSupportedGoogleServices() {
     { name: 'NotebookLM', title: 'NotebookLM', url: 'notebooklm.google.com', img: './images/logos/notebooklm.png' },
     { name: 'AIStudio', title: 'AI Studio', url: 'aistudio.google.com', img: './images/logos/aistudio.png' },
     { name: 'Stitch', title: 'Stitch', url: 'stitch.google.com', img: './images/logos/stitch.png' },
+    GOOGLE_SEARCH_SERVICE,
   ];
 }
 
@@ -155,6 +219,14 @@ export function buildRedirectRules({ defaultAccount, customRules = [], accounts,
         }
       });
     }
+  }
+
+  // Google Search (www.google.<tld>/search, /webhp) - authuser only
+  const searchAccountId = getGoogleSearchAccountId(defaultAccount, customRules);
+  if (searchAccountId !== 0 && isAccountLoggedIn(searchAccountId)) {
+    const search = buildGoogleSearchRules({ accountId: searchAccountId, ruleIdStart: ruleId });
+    rules.push(...search.rules);
+    ruleId = search.nextId;
   }
 
   // Path-redirect services (allow /u/N/ URLs, redirect others with ?authuser)
@@ -203,6 +275,7 @@ export function buildRedirectRules({ defaultAccount, customRules = [], accounts,
   // Standard services (authuser only, no path-based redirect)
   for (const service of services) {
     if (SERVICES_WITH_PATH_REDIRECT.includes(service.url)) continue;
+    if (service.name === GOOGLE_SEARCH_SERVICE.name) continue;
 
     const accountId = getAccountIdForService(service);
     if (accountId === 0 || !isAccountLoggedIn(accountId)) continue;

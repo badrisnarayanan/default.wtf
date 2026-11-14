@@ -37,7 +37,7 @@ function isGoogleServiceUrl(url) {
       url
     ) ||
     // test several services that switched from the pattern "https://maps.google.com" -> https://www.google.com/maps
-    /^https?:\/\/(www\.)?google\.co(?:m|\.[a-z]{2,3})\/(?:maps|finance|travel|flights)/i.test(
+    /^https?:\/\/(www\.)?google\.co(?:m|\.[a-z]{2,3})\/(?:maps|finance|travel|flights|search|webhp)/i.test(
       url
     )
   );
@@ -266,7 +266,15 @@ chrome.tabs.onCreated.addListener(async (tab) => {
 
   // Determine which account to use
   let accountId = defaultAccount;
+  const isSearchPage = /^https?:\/\/(?:www\.)?google\.(?:com|co\.[a-z]{2}|com\.[a-z]{2,3}|[a-z]{2,3})\/(?:search|webhp)(?:[/?#]|$)/i.test(url);
   for (const rule of customRules) {
+    if (rule.serviceName?.toLowerCase() === 'googlesearch' || rule.serviceUrl === 'google.com/search') {
+      if (isSearchPage) {
+        accountId = rule.accountId;
+        break;
+      }
+      continue;
+    }
     const reg = new RegExp(
       `^https?://[^?&]*${rule.serviceName.toLowerCase()}\\.google\\.co.*`,
       'is'

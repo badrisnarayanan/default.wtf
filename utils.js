@@ -21,7 +21,7 @@ function isGoogleServiceUrl(url) {
     /^https?:\/\/[^?&]*(?:mail|drive|calendar|meet|docs|admin|photos|translate|keep|hangouts|chat|workspace|maps|news|ads|ediscovery|jamboard|earth|podcasts|classroom|business|myaccount|adsense|cloud|adwords|analytics|firebase|play|voice|tagmanager|duo|datastudio|optimize|merchants|finance|colab\.research|contacts|script|messages|search|stadia|developers|one|chrome|books|sites|groups|gemini|notebooklm|aistudio|stitch)\.google\.co.*/i.test(
       url
     ) ||
-    /^https?:\/\/(www\.)?google\.co(?:m|\.[a-z]{2,3})\/(?:maps|finance|travel|flights)/i.test(
+    /^https?:\/\/(www\.)?google\.co(?:m|\.[a-z]{2,3})\/(?:maps|finance|travel|flights|search|webhp)/i.test(
       url
     )
   );
@@ -127,5 +127,6 @@ function allSupportedGoogleServices() {
     { name: 'NotebookLM', title: 'NotebookLM', url: 'notebooklm.google.com', img: './images/logos/notebooklm.png' },
     { name: 'AIStudio', title: 'AI Studio', url: 'aistudio.google.com', img: './images/logos/aistudio.png' },
     { name: 'Stitch', title: 'Stitch', url: 'stitch.google.com', img: './images/logos/stitch.png' },
+    { name: 'GoogleSearch', title: 'Search', url: 'www.google.com', img: './images/logos/search.png' },
   ];
 }

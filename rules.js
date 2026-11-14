@@ -5,7 +5,7 @@ function setupUI() {
     const rulesUrls = rules.map((r) => r.serviceUrl);
     let services = allServices.filter((s) => rulesUrls.indexOf(s.url) === -1);
     services.sort((a, b) =>
-      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+      (a.title || a.name).localeCompare(b.title || b.name, undefined, { sensitivity: 'base' })
     );
     allAccounts((data) => {
       const accounts = data.accounts ?? [];
